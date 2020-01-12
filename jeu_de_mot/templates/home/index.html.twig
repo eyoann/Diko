@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <h1 class="text-center">DIKO</h1>
+
+	<form class="form-inline md-form mr-auto mb-4 d-flex justify-content-center" action="{{ path('search') }}">
+        <input class="form-control mr-sm-2" type="search" name="q">
+        <button class="btn btn-outline-primary btn-rounded btn-sm my-0" type="submit">Recherche</button>
+    </form>
+
+{% endblock %}

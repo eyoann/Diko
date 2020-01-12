@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	<a class="btn btn-primary" href="{{ path('home') }}" role="button">HOME</a>
+	<h1 class="text-center">{{ q|capitalize }}</h1>
+
+   	<h2>Definition</h2>
+	{% for def in defs %}
+		<p><strong>{{ loop.index }}</strong> {{ def|capitalize }}</p>
+	{% endfor %}
+
+
+	{% for title,array in assos %}
+			{% if title matches '{-out$}' %}
+				<div class="row">
+			{% endif %}
+			<div class="col">
+				<table class="table">
+				  	<thead>
+				    	<tr>
+				      		<th><h2>{{ title }}</h2></th>
+				    	</tr>
+				  	</thead>
+    				<tbody>
+						{% for item in array|reverse %}
+							{% if loop.index0 is divisible by(4) %}
+								<tr>
+						 	{% endif %}
+									<td><a href="{{ path('search', {'q': item}) }}">{{ item }}</a></td>
+						{% endfor %}
+					</tbody>
+				</table>
+    		</div>
+			{% if title matches '{-in$}' %}
+				</div>
+			{% endif %}
+	{% endfor %}
+
+
+{% endblock %}
+
+{% block javascripts %}{{ encore_entry_script_tags('search') }}{% endblock %}
