@@ -3,38 +3,64 @@
 {% block body %}
 	<a class="btn btn-primary" href="{{ path('home') }}" role="button">HOME</a>
 	<h1 class="text-center">{{ q|capitalize }}</h1>
-
-   	<h2>Definition</h2>
-	{% for def in defs %}
-		<p><strong>{{ loop.index }}</strong> {{ def|capitalize }}</p>
-	{% endfor %}
-
-
-	{% for title,array in assos %}
-			{% if title matches '{-out$}' %}
+	<div class="container">
+	<p>
+		{% for item in pos|reverse %}
+			{{ item.terme }} {% if not loop.last %},{% endif %}
+		{% endfor %}
+	</p>
+	<p>
+		<strong>Lemme :</strong>
+		{% for item in lemme|reverse %}
+			{{ item.terme }} {% if not loop.last %},{% endif %}
+		{% endfor %}
+	</p>
+	<p>
+		<strong>Informations lexicales :</strong>
+		{% for item in iL|reverse %}
+			{{ item.terme }} {% if not loop.last %},{% endif %}
+		{% endfor %}
+	</p>
+	   	<h2>Définition {% if defs|length > 3 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
+		{% for def in defs %}
+			<p {% if loop.index > 3 %}class="removable"{% endif %}><strong>{{ loop.index }}</strong> {{ def|capitalize }}</p>
+		{% endfor %}
+	</div>
+	{% set inc = 1 %}
+	<div class="container bg-info border border-dark">
+		<fieldset class="form-group border p-2">
+		<legend class="w-auto">Recherche</legend>
+			{% for array in listCheckBox %}
 				<div class="row">
-			{% endif %}
-			<div class="col">
-				<table class="table">
-				  	<thead>
-				    	<tr>
-				      		<th><h2>{{ title }}</h2></th>
-				    	</tr>
-				  	</thead>
-    				<tbody>
-						{% for item in array|reverse %}
-							{% if loop.index0 is divisible by(4) %}
-								<tr>
-						 	{% endif %}
-									<td><a href="{{ path('search', {'q': item}) }}">{{ item }}</a></td>
-						{% endfor %}
-					</tbody>
-				</table>
-    		</div>
-			{% if title matches '{-in$}' %}
+					{% for item in array %}
+						<div class="col">
+							<div class="form-check">
+						    	<input type="checkbox" class="form-check-input" id="{{inc}}" checked>
+						    	<label class="form-check-label">{{item}}</label>
+						  	</div>
+						</div>
+					{% set inc = inc + 1 %}
+					{% endfor %}
 				</div>
-			{% endif %}
-	{% endfor %}
+		  	{% endfor %}
+		</fieldset>
+	</div>
+	<div class="container" id="assos">
+		{% for title,asso in assos %}
+			<div class="row" id="asso-{{loop.index}}">
+			{% for array in asso %}
+				<div class="col">
+					<h2 class="inline">{% if loop.first %}<i class="fas fa-arrow-right fa-xs text-success">({{  array|length }})</i>{% else %}<i class="fas fa-arrow-left fa-xs text-danger">({{  array|length }})</i>{% endif %}{{ title|capitalize }}{% if array|length > 20 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
+					{% for item in array|reverse %}
+						<div class="{% if loop.index > 20 %}removable{% else %}d-inline-block{% endif %}"><a href="{{ path('search', {'q': item.search}) }}">{{ item.terme }}</a> ></div>
+					{% else %}
+						<p>Aucune donnée</p>
+					{% endfor %}
+				</div>
+			{% endfor %}
+			</div>
+		{% endfor %}
+	</div>
 
 
 {% endblock %}

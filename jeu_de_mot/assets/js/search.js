@@ -1,43 +1,32 @@
-/*
 const $ = require('jquery');
 
 $(document).ready(function() {
 
-	var search = $(".search").attr("data");
-	console.log("toto");
-	$.ajax({
-        type        : 'GET',
-        url         : 'http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel='+ search +'&rel=',
-        success: function(data) {
-            console.log(data);
-        },
-        error: function(data) {
-        	console.log("tata");
-            console.log(data);
+    $(":checkbox").click(function(){
+        var id = $(this).attr('id');
+        if($(this).prop("checked") == false){
+            $('#asso-' + id).hide();
+        } else {
+            $('#asso-' + id).show();
         }
     });
 
+    $(":button").click(function(){
+        var kids = $(this).parent().parent().children('.removable');
+        if($(this).hasClass('plus')) {
+            //console.log(kids);
+            kids.show();
+            $(this).html("<i class=\"fas fa-minus-circle fa-lg\"></i>");
+            $(this).removeClass("plus");
+            kids.addClass("d-inline-block");
+            $(this).addClass("moins");
+        } else {
+            kids.hide();
+            $(this).html("<i class=\"fas fa-plus-circle fa-lg\"></i>");
+            $(this).removeClass("moins");
+            kids.removeClass("d-inline-block");
+            $(this).addClass("plus");
+        }
+    });
 
 });
-
-const https = require('http');
-const parse = require('node-html-parser').parse;
-
-https.get('http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel=stylo&rel=', (resp) => {
-  let data = '';
-
-  // A chunk of data has been recieved.
-  resp.on('data', (chunk) => {
-    data += chunk;
-  });
-
-  // The whole response has been received. Print out the result.
-  resp.on('end', () => {
-    const root = parse(data);
-    console.log(root.querySelector("CODE").outerHTML);
-  });
-
-}).on("error", (err) => {
-  console.log("Error fetch JeuxdeMots.org : " + err.message);
-});
-*/

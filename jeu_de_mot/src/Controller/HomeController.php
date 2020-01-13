@@ -31,15 +31,29 @@ class HomeController extends AbstractController
 
     	//REQUEST
     	$search = $request->query->get('q');
+    	$search = str_replace(" ", "+", $search);
     	//SEARCH SERVER JDM
     	$contenu = file_get_contents("http://www.jeuxdemots.org/rezo-dump.php?gotermsubmit=Chercher&gotermrel=$search&rel=");
 
+
     	//RECUPERER LE DUMP CODE
-    	preg_match("/<CODE>(.*)<\/CODE>/s", $contenu, $matches, PREG_OFFSET_CAPTURE);
+    	//preg_match("/<CODE>(.*)<\/CODE>/s", $contenu, $matches, PREG_OFFSET_CAPTURE);
+    	//$contenu = $matches[0];
+
+
+    	//ID
+		$regex = "/eid=(?P<id>[0-9]*)/";
+		preg_match($regex, $contenu, $id, PREG_OFFSET_CAPTURE);
+
+		$id = $id['id'][0];
+
+    	//Recuperer la rechercher
+    	preg_match("/e;[0-9]*;'(?P<nom>.*)';[0-9]*;[0-9]*(;'(?P<cnom>.*)')*/", utf8_encode($contenu), $name, PREG_OFFSET_CAPTURE);
+    	$search = array_key_exists('cnom', $name) ? $name['cnom'][0] : $name['nom'][0];
+
 
     	//RECUPERER LES DEFINITIONS
     	preg_match("/<def>(.*)<\/def>/s", $contenu, $defs, PREG_OFFSET_CAPTURE);
-
 
     	if($defs) {
 	    	$s = utf8_encode(strip_tags($defs[0][0]));
@@ -54,7 +68,6 @@ class HomeController extends AbstractController
 			preg_match_all($regex, $s, $matches, PREG_SET_ORDER);
 
 			foreach ($matches as $match) {
-				//print_r($match);
 
 				if ($match[1] && $definition) {
 					$defs[$i] = $definition;
@@ -70,58 +83,54 @@ class HomeController extends AbstractController
 			}
 		}
 
-		//ID
-		$regex = "/eid=([0-9]*)/";
-		preg_match($regex, $contenu, $id, PREG_OFFSET_CAPTURE);
-		$id = $id[1][0];
+    	//BDD
+    	preg_match_all("/e;(?P<id>[0-9]*);'(?P<nom>.*)';[0-9]*;[0-9]*(;'(?P<cnom>.*)')*/", utf8_encode($contenu), $addBDD, PREG_SET_ORDER);
+    	foreach ($addBDD as $key => $value) {
+    		$arrayBDD [$value['id']] = [
+    		'terme' =>array_key_exists('cnom', $value) ? $value['cnom'] : $value['nom'],
+    		'search' => str_replace(" ", "+", $value['nom'])
+    		];
+    	}
+    	unset($arrayBDD['239128']); //Remove _COM
+    	unset($arrayBDD['2983124']); //Remove _SW
 
 
 		$forlist = [
-			'0' => 'Idée associée',
+			'0' => 'Associations d\'idées',
 			'4' => 'r_pos',
-			'5' => 'Synonyme',
-			'6' => 'r_isa',
-			'8' => 'r_hypo',
-			'9' => 'r_has_part',
-			'10' => 'r_holo',
-			'11' =>'r_locution',
-			'12' =>'r_flpot',
-			'13' =>'r_agent',
-			'14' =>'r_patient',
-			'15' =>'r_lieu',
-			'16' =>'r_instr',
-			'17' =>'r_carac',
-			'18' =>'r_data',
-			'19' =>'r_lemma',
-			'20' =>'r_has_magn',
-			'21' =>'r_has_antimagn',
-			'22' =>'r_family',
-			'23' =>'r_carac-1',
-			'24' =>'r_agent-1',
-			'25' =>'r_instr-1',
-			'26' =>'r_patient-1',
-			'28' =>'r_lieu-1',
-			'32' =>'r_sentiment',
-			'35' =>'r_meaning/glose',
-			'36' =>'r_infopot',
-			'37' =>'r_telic_role',
-			'38' =>'r_agentif_role',
-			'46' =>'r_chunk_objet',
-			'48' =>'r_chunk_instr',
-			'50' =>'r_object&gt;mater',
-			'66' =>'r_chunk_head',
-			'106' =>'r_color',
-			'115' =>'r_sentiment',
-			'121' =>'r_own',
-			'128' =>'r_node2relnode',
-			'155' =>'r_make_use_of',
-			'156' =>'r_is_used_by',
-			'200' =>'r_context',
-			'444' =>'r_link',
-			'555' =>'r_cooccurrence',
-			'666' =>'r_aki',
-			'777' =>'r_wiki',
-			'999' =>'r_inhib'
+			'5' => 'Synonymes',
+			'6' => 'Generiques',
+			'8' => 'Spécifiques',
+			'9' => "Parties de $search",
+			'10' => "$search fait partie de",
+			'11' =>'Locutions',
+			'13' =>"Que peut faire $search ? (agent)",
+			'14' =>"$search comme objet",
+			'15' =>"Lieu ou peut se trouver $search",
+			'16' =>'Instrument',
+			'17' =>'Caractéristiques',
+			'18' =>'iL',
+			'19' =>'Lemme',
+			'20' =>"Plus intense que $search",
+			'21' =>"Moins intense que $search",
+			'22' =>'Termes étymologiquement apparentés',
+			'24' =>"Que peut faire $search",
+			'25' =>"Que peut-on faire avec $search",
+			'26' =>"Que peut-on faire de/a $search (patient)",
+			'28' =>"Lieux où peut se trouver/dérouler $search",
+			'32' =>'Sentiments',
+			'37' =>"Rôles teliques $search",
+			'38' =>"Rôles agentifs $search",
+			'46' =>"$search comme objet (interne)",
+			'48' =>"$search comme instrument",
+			'50' =>'Matiere/Substance',
+			'106' =>'Couleurs',
+			'121' =>'Possède',
+			'155' =>"Peut utiliser un objet ou produit par $search",
+			'156' =>"Par qui/quoi $search peut-être utilisé",
+			'666' =>'Totaki',
+			'777' =>'Wikipedia',
+			'999' =>'Inhib'
 		];
 
 		$forArray = array();
@@ -135,7 +144,7 @@ class HomeController extends AbstractController
 
 			$list = array_merge($list, $out);
 
-			$forArray ["$value-out"] = $out;
+			$forArray ["$value"]["out"] = $out;
 
 			$regex = "/r;[0-9]*;([0-9]*);$id;$key;[0-9]*/";
 
@@ -143,27 +152,47 @@ class HomeController extends AbstractController
 
 			$list = array_merge($list, $in);
 
-			$forArray ["$value-in"] = $in;
+			$forArray ["$value"]["in"] = $in;
+		}
+
+		foreach ($forArray as $key => $array) {
+			foreach ($array as $inout => $value) {
+				$forArray[$key][$inout] = $this->relation($value, $arrayBDD);
+			}
 		}
 
 
-		$result = $dico->find(array('id' => array('$in' => $list)));
 
-		foreach ($result as $entry) {
-			$mots[$entry['id']] = $entry['terme'];
 
-		}
+		//POS
+		$pos = $forArray['r_pos']['out'];
+		unset($forArray['r_pos']);
+		unset($forlist['4']);
 
-		unset($result);
+		//lemme
+		$lemme = $forArray['Lemme']['out'];
+		unset($forArray['Lemme']);
+		unset($forlist['19']);
 
-		foreach ($forArray as $key => $value) {
-			$forArray[$key] = $this->relation($value, $mots);
+		//IL
+		$iL = $forArray['iL']['out'];
+		unset($forArray['iL']);
+		unset($forlist['18']);
+
+
+
+		for ($i=0; $i < 31; $i+=4) {
+			$listCheckBox [] = array_slice($forlist, $i, 4);
 		}
 
     	return $this->render('home/search.html.twig',
     		['q' => $search,
     		 'defs' => $defs,
-    		 'assos' => $forArray
+    		 'assos' => $forArray,
+    		 'pos' => $pos,
+    		 'lemme' => $lemme,
+    		 'iL' => $iL,
+    		 'listCheckBox' => $listCheckBox
     		 ]);
     }
 
@@ -188,7 +217,10 @@ class HomeController extends AbstractController
 
 		foreach ($arrayid as $key => $value) {
 			if(array_key_exists($value,$mots)) {
-				$relationOut[$value] = $mots[$value];
+				$relationOut[$value] = [
+				'terme' => $mots[$value]['terme'],
+				'search' => $mots[$value]['search']
+				];
 			}
 		}
 
