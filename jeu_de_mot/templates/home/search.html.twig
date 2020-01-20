@@ -1,30 +1,40 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-	<a class="btn btn-primary" href="{{ path('home') }}" role="button">HOME</a>
+	<a class="btn" href="{{ path('home') }}" role="button">
+		<img src="{{ asset('build/images/little-logo.png') }}"  class="img-fluid rounded mx-auto d-block" alt="logo">
+	</a>
 	<h1 class="text-center">{{ q|capitalize }}</h1>
 	<div class="container">
-	<p>
-		{% for item in pos|reverse %}
-			{{ item.terme }} {% if not loop.last %},{% endif %}
-		{% endfor %}
-	</p>
-	<p>
-		<strong>Lemme :</strong>
-		{% for item in lemme|reverse %}
-			{{ item.terme }} {% if not loop.last %},{% endif %}
-		{% endfor %}
-	</p>
-	<p>
-		<strong>Informations lexicales :</strong>
-		{% for item in iL|reverse %}
-			{{ item.terme }} {% if not loop.last %},{% endif %}
-		{% endfor %}
-	</p>
-	   	<h2>Définition {% if defs|length > 3 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
-		{% for def in defs %}
-			<p {% if loop.index > 3 %}class="removable"{% endif %}><strong>{{ loop.index }}</strong> {{ def|capitalize }}</p>
-		{% endfor %}
+		{% if pos|length > 0 %}
+			<p>
+				{% for item in pos|reverse %}
+					{{ item.terme }} {% if not loop.last %},{% endif %}
+				{% endfor %}
+			</p>
+		{% endif %}
+		{% if lemme|length > 0 %}
+			<p>
+				<strong>Lemme :</strong>
+				{% for item in lemme|reverse %}
+					{{ item.terme }} {% if not loop.last %},{% endif %}
+				{% endfor %}
+			</p>
+		{% endif %}
+		{% if iL|length > 0 %}
+			<p>
+				<strong>Informations lexicales :</strong>
+				{% for item in iL|reverse %}
+					{{ item.terme }} {% if not loop.last %},{% endif %}
+				{% endfor %}
+			</p>
+		{% endif %}
+		{% if defs|length > 0 %}
+		   	<h2>Définition {% if defs|length > 3 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
+			{% for def in defs %}
+				<p {% if loop.index > 3 %}class="removable"{% endif %}><strong>{{ loop.index }}</strong> {{ def|capitalize }}</p>
+			{% endfor %}
+		{% endif %}
 	</div>
 	{% set inc = 1 %}
 	<div class="container bg-info border border-dark">
@@ -49,14 +59,14 @@
 		{% for title,asso in assos %}
 			<div class="row" id="asso-{{loop.index}}">
 			{% for array in asso %}
-				<div class="col">
-					<h2 class="inline">{% if loop.first %}<i class="fas fa-arrow-right fa-xs text-success">({{  array|length }})</i>{% else %}<i class="fas fa-arrow-left fa-xs text-danger">({{  array|length }})</i>{% endif %}{{ title|capitalize }}{% if array|length > 20 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
-					{% for item in array|reverse %}
-						<div class="{% if loop.index > 20 %}removable{% else %}d-inline-block{% endif %}"><a href="{{ path('search', {'q': item.search}) }}">{{ item.terme }}</a> ></div>
-					{% else %}
-						<p>Aucune donnée</p>
-					{% endfor %}
-				</div>
+					{% if array|length > 0 %}
+						<div class="col">
+							<h2 class="inline">{% if loop.first %}<i class="fas fa-arrow-right fa-xs text-success">({{  array|length }})</i>{% else %}<i class="fas fa-arrow-left fa-xs text-danger">({{  array|length }})</i>{% endif %}{{ title|capitalize }}{% if array|length > 20 %}<button class="text-warning plus btn btn-link"><i class="fas fa-plus-circle fa-lg"></i></button>{% endif %}</h2>
+							{% for item in array|reverse %}
+								<div class="{% if loop.index > 20 %}removable{% else %}d-inline-block{% endif %}"><a href="{{ path('search', {'q': item.search}) }}">{{ item.terme }}</a> ></div>
+							{% endfor %}
+						</div>
+					{% endif %}
 			{% endfor %}
 			</div>
 		{% endfor %}
